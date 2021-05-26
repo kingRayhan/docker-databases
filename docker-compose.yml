@@ -22,11 +22,21 @@ services:
       - 54321:5432
     volumes:
       - bin-postgres:/var/lib/postgresql/data
-    environment:
-      LC_ALL: C.UTF-8
-      POSTGRES_DB: app
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
+    env_file:
+      - ./envs/postgres.env
+    networks:
+      - database-network
+
+  docker_mongodb:
+    container_name: docker_mongo
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - bin-mongo:/etc/mongo
+    env_file:
+      - ./envs/mongodb.env
     networks:
       - database-network
 
@@ -40,6 +50,18 @@ services:
       - bin-redis:/data
     networks:
       - database-network
+
+  ### Clients
+  phpmyadmin:
+    container_name: docker_phpmyadmin
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOSTS=docker_mysql
+      - PMA_PORTS=3307
 ######### Volumes & Network ###################################
 networks:
   database-network:
@@ -49,4 +71,5 @@ volumes:
   bin-mysql:
   bin-postgres:
   bin-redis:
+  bin-mongo:
     driver: local
